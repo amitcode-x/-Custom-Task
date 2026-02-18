@@ -5,7 +5,7 @@ from django.db.models import Sum
 
 from rest_framework.response import Response
 from django.db import transaction
-from django.db import models
+from django.db import models 
 
 from .models import Product, Inventory, Dealer, Order, OrderItem
 from .serializers import (
