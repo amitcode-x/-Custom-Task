@@ -196,7 +196,7 @@ function Navbar({ onToggleSidebar, sidebarOpen }) {
             </div>
           </button>
 
-         
+          <div className="navbar-logo-icon">⚡</div>
           <h1 className="navbar-title">Sales &amp; Inventory System</h1>
         </div>
 

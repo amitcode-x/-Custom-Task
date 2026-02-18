@@ -151,6 +151,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 CORS_ALLOWED_ORIGINS = [
-    "https://custom-task.vercel.app/",
+    "https://custom-task.vercel.app",
 ]
 
