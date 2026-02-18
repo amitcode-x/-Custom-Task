@@ -28,7 +28,8 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["custom-task.onrender.com"]
+
 
 
 # Application definition
@@ -88,8 +89,12 @@ DATABASES = {
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config("DB_HOST"),
         'PORT': config("DB_PORT"),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
+
 
 
 
