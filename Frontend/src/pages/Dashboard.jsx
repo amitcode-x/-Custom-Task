@@ -1,413 +1,408 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-function Dashboard() {
-  const [report, setReport] = useState(null);
-
-  useEffect(() => {
-    api.get("orders/report/")
-      .then(res => setReport(res.data))
-      .catch(err => console.log(err));
-  }, []);
-
-  if (!report) {
-    return (
-      <>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-          .loader-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 60vh;
-            gap: 16px;
-            font-family: 'Outfit', sans-serif;
-          }
-          .loader-ring {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(99,102,241,0.2);
-            border-top-color: #6366f1;
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-          }
-          .loader-text {
-            color: rgba(165,180,252,0.6);
-            font-size: 0.9rem;
-            font-weight: 500;
-            letter-spacing: 0.05em;
-          }
-        `}</style>
-        <div className="loader-wrap">
-          <div className="loader-ring" />
-          <p className="loader-text">Loading Dashboard...</p>
-        </div>
-      </>
-    );
-  }
-
-  const cards = [
-    {
-      title: "Total Orders",
-      value: report.total_orders,
-      icon: "🛒",
-      color: "#6366f1",
-      glow: "rgba(99,102,241,0.25)",
-      bg: "rgba(99,102,241,0.1)",
-      border: "rgba(99,102,241,0.25)",
-    },
-    {
-      title: "Draft Orders",
-      value: report.draft_orders,
-      icon: "📝",
-      color: "#f59e0b",
-      glow: "rgba(245,158,11,0.2)",
-      bg: "rgba(245,158,11,0.08)",
-      border: "rgba(245,158,11,0.25)",
-    },
-    {
-      title: "Confirmed Orders",
-      value: report.confirmed_orders,
-      icon: "✅",
-      color: "#3b82f6",
-      glow: "rgba(59,130,246,0.2)",
-      bg: "rgba(59,130,246,0.08)",
-      border: "rgba(59,130,246,0.25)",
-    },
-    {
-      title: "Delivered Orders",
-      value: report.delivered_orders,
-      icon: "🚀",
-      color: "#10b981",
-      glow: "rgba(16,185,129,0.2)",
-      bg: "rgba(16,185,129,0.08)",
-      border: "rgba(16,185,129,0.25)",
-    },
-  ];
-
+// ── Skeleton Components ────────────────────────────────────────
+function SkeletonStatCard() {
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
-        .dash-wrap {
-          font-family: 'Outfit', sans-serif;
-          color: #e2e8f0;
-        }
-
-        /* ── Header ── */
-        .dash-header {
-          margin-bottom: 28px;
-        }
-        .dash-header h1 {
-          font-size: 1.8rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #e2e8f0, #a5b4fc);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          letter-spacing: -0.01em;
-        }
-        .dash-header p {
-          font-size: 0.85rem;
-          color: rgba(148,163,184,0.7);
-          margin-top: 4px;
-          font-weight: 400;
-        }
-
-        /* ── Cards Grid ── */
-        .cards-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 18px;
-          margin-bottom: 24px;
-        }
-
-        @media (max-width: 1100px) {
-          .cards-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-          .cards-grid { grid-template-columns: 1fr; }
-        }
-
-        /* ── Stat Card ── */
-        .stat-card {
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: 16px;
-          padding: 22px 20px;
-          border: 1px solid;
-          position: relative;
-          overflow: hidden;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          cursor: default;
-        }
-        .stat-card:hover {
-          transform: translateY(-3px);
-        }
-        .stat-card::before {
-          content: '';
-          position: absolute;
-          top: -30px;
-          right: -30px;
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          opacity: 0.15;
-        }
-
-        .card-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 16px;
-        }
-        .card-icon-wrap {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.2rem;
-        }
-        .card-title {
-          font-size: 0.78rem;
-          font-weight: 600;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-          color: rgba(148,163,184,0.8);
-          text-align: right;
-        }
-        .card-value {
-          font-size: 2.4rem;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          line-height: 1;
-        }
-        .card-sub {
-          font-size: 0.75rem;
-          color: rgba(148,163,184,0.5);
-          margin-top: 6px;
-          font-weight: 400;
-        }
-
-        /* ── Bottom Row ── */
-        .bottom-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 18px;
-        }
-        @media (max-width: 860px) {
-          .bottom-row { grid-template-columns: 1fr; }
-        }
-
-        /* ── Revenue Card ── */
-        .revenue-card {
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(16,185,129,0.25);
-          border-radius: 16px;
-          padding: 24px;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 0 30px rgba(16,185,129,0.08);
-        }
-        .revenue-card::before {
-          content: '';
-          position: absolute;
-          bottom: -40px;
-          right: -40px;
-          width: 150px;
-          height: 150px;
-          background: radial-gradient(circle, rgba(16,185,129,0.15), transparent 70%);
-          border-radius: 50%;
-        }
-        .revenue-label {
-          font-size: 0.75rem;
-          font-weight: 600;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: rgba(52,211,153,0.7);
-          margin-bottom: 10px;
-        }
-        .revenue-amount {
-          font-size: 2.6rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #34d399, #6ee7b7);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          letter-spacing: -0.02em;
-          line-height: 1.1;
-        }
-        .revenue-sub {
-          font-size: 0.8rem;
-          color: rgba(148,163,184,0.5);
-          margin-top: 8px;
-        }
-        .revenue-icon {
-          position: absolute;
-          top: 20px;
-          right: 24px;
-          font-size: 2rem;
-          opacity: 0.3;
-        }
-
-        /* ── Summary Card ── */
-        .summary-card {
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 16px;
-          padding: 24px;
-        }
-        .summary-title {
-          font-size: 0.75rem;
-          font-weight: 600;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: rgba(148,163,184,0.6);
-          margin-bottom: 16px;
-        }
-        .summary-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .summary-row:last-child {
-          border-bottom: none;
-        }
-        .summary-row-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 0.88rem;
-          color: rgba(203,213,225,0.8);
-        }
-        .summary-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-        .summary-row-right {
-          font-size: 0.9rem;
-          font-weight: 700;
-        }
-        .summary-bar-wrap {
-          margin-top: 6px;
-          height: 4px;
-          background: rgba(255,255,255,0.06);
-          border-radius: 4px;
-          overflow: hidden;
-          margin-bottom: 2px;
-        }
-        .summary-bar {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.8s ease;
-        }
-      `}</style>
-
-      <div className="dash-wrap">
-        {/* Header */}
-        <div className="dash-header">
-          <h1>Dashboard</h1>
-          <p>Welcome back, Admin! Here's what's happening today.</p>
-        </div>
-
-        {/* Stat Cards */}
-        <div className="cards-grid">
-          {cards.map((card) => (
-            <div
-              key={card.title}
-              className="stat-card"
-              style={{
-                borderColor: card.border,
-                boxShadow: `0 0 24px ${card.glow}`,
-              }}
-            >
-              <div
-                className="stat-card-bg"
-                style={{
-                  position: "absolute",
-                  top: "-30px",
-                  right: "-30px",
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
-                  background: `radial-gradient(circle, ${card.glow}, transparent 70%)`,
-                }}
-              />
-              <div className="card-top">
-                <div
-                  className="card-icon-wrap"
-                  style={{ background: card.bg, border: `1px solid ${card.border}` }}
-                >
-                  {card.icon}
-                </div>
-                <span className="card-title">{card.title}</span>
-              </div>
-              <div className="card-value" style={{ color: card.color }}>
-                {card.value}
-              </div>
-              <div className="card-sub">Total count</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom Row */}
-        <div className="bottom-row">
-          {/* Revenue */}
-          <div className="revenue-card">
-            <span className="revenue-icon">💰</span>
-            <div className="revenue-label">Total Revenue</div>
-            <div className="revenue-amount">₹ {Number(report.total_revenue).toLocaleString("en-IN")}</div>
-            <div className="revenue-sub">Across all confirmed &amp; delivered orders</div>
-          </div>
-
-          {/* Order Summary */}
-          <div className="summary-card">
-            <div className="summary-title">Order Breakdown</div>
-
-            {[
-              { label: "Draft", value: report.draft_orders, total: report.total_orders, color: "#f59e0b" },
-              { label: "Confirmed", value: report.confirmed_orders, total: report.total_orders, color: "#3b82f6" },
-              { label: "Delivered", value: report.delivered_orders, total: report.total_orders, color: "#10b981" },
-            ].map((row) => {
-              const pct = report.total_orders > 0
-                ? Math.round((row.value / report.total_orders) * 100)
-                : 0;
-              return (
-                <div key={row.label}>
-                  <div className="summary-row">
-                    <div className="summary-row-left">
-                      <div className="summary-dot" style={{ background: row.color, boxShadow: `0 0 6px ${row.color}` }} />
-                      {row.label}
-                    </div>
-                    <span className="summary-row-right" style={{ color: row.color }}>
-                      {row.value} <span style={{ color: "rgba(148,163,184,0.4)", fontWeight: 400, fontSize: "0.75rem" }}>({pct}%)</span>
-                    </span>
-                  </div>
-                  <div className="summary-bar-wrap">
-                    <div className="summary-bar" style={{ width: `${pct}%`, background: row.color }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+    <div className="relative bg-white/50 backdrop-blur-md rounded-2xl p-5 border border-white/40 overflow-hidden animate-pulse">
+      <div className="flex justify-between items-start mb-4">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-200/80 to-purple-200/80" />
+        <div className="w-20 h-3 rounded-full bg-pink-100/80" />
       </div>
-    </>
+      <div className="w-16 h-10 rounded-lg bg-gradient-to-r from-pink-200/60 to-purple-200/60 mb-2" />
+      <div className="w-24 h-2.5 rounded-full bg-pink-100/60" />
+    </div>
   );
 }
 
-export default Dashboard;
+function SkeletonWide() {
+  return (
+    <div className="relative bg-white/50 backdrop-blur-md rounded-2xl p-7 border border-white/40 animate-pulse overflow-hidden">
+      <div className="w-28 h-3 rounded-full bg-pink-200/70 mb-4" />
+      <div className="w-44 h-10 rounded-lg bg-gradient-to-r from-pink-200/60 to-purple-200/60 mb-3" />
+      <div className="w-52 h-2.5 rounded-full bg-pink-100/60" />
+    </div>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────
+export default function Dashboard() {
+  const [report, setReport] = useState(null);
+
+  useEffect(() => {
+    api
+      .get("orders/report/")
+      .then((res) => setReport(res.data))
+      .catch((err) => console.log(err));
+  }, []);
+
+  const cards = report
+    ? [
+        {
+          title: "Total Orders",
+          value: report.total_orders,
+          icon: "🛒",
+          gradFrom: "#f472b6",
+          gradTo: "#ec4899",
+          bgFrom: "from-pink-50",
+          bgTo: "to-rose-50",
+          borderC: "border-pink-200/60",
+          glow: "rgba(244,63,94,0.18)",
+          iconBg: "rgba(244,114,182,0.12)",
+          iconBorder: "rgba(244,114,182,0.25)",
+        },
+        {
+          title: "Draft Orders",
+          value: report.draft_orders,
+          icon: "📝",
+          gradFrom: "#fb923c",
+          gradTo: "#f59e0b",
+          bgFrom: "from-amber-50",
+          bgTo: "to-orange-50",
+          borderC: "border-amber-200/60",
+          glow: "rgba(245,158,11,0.15)",
+          iconBg: "rgba(251,146,60,0.12)",
+          iconBorder: "rgba(251,146,60,0.25)",
+        },
+        {
+          title: "Confirmed Orders",
+          value: report.confirmed_orders,
+          icon: "✅",
+          gradFrom: "#c084fc",
+          gradTo: "#a855f7",
+          bgFrom: "from-violet-50",
+          bgTo: "to-purple-50",
+          borderC: "border-violet-200/60",
+          glow: "rgba(168,85,247,0.15)",
+          iconBg: "rgba(192,132,252,0.12)",
+          iconBorder: "rgba(192,132,252,0.25)",
+        },
+        {
+          title: "Delivered Orders",
+          value: report.delivered_orders,
+          icon: "🚀",
+          gradFrom: "#34d399",
+          gradTo: "#10b981",
+          bgFrom: "from-emerald-50",
+          bgTo: "to-teal-50",
+          borderC: "border-emerald-200/60",
+          glow: "rgba(16,185,129,0.15)",
+          iconBg: "rgba(52,211,153,0.12)",
+          iconBorder: "rgba(52,211,153,0.25)",
+        },
+      ]
+    : [];
+
+  const summaryRows = report
+    ? [
+        {
+          label: "Draft",
+          value: report.draft_orders,
+          dot: "#f59e0b",
+          from: "#fb923c",
+          to: "#f59e0b",
+        },
+        {
+          label: "Confirmed",
+          value: report.confirmed_orders,
+          dot: "#a855f7",
+          from: "#c084fc",
+          to: "#a855f7",
+        },
+        {
+          label: "Delivered",
+          value: report.delivered_orders,
+          dot: "#10b981",
+          from: "#34d399",
+          to: "#10b981",
+        },
+      ]
+    : [];
+
+  return (
+    <div style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');`}</style>
+
+      {/* Page Header */}
+      <div style={{ marginBottom: 28 }}>
+        <h1
+          style={{
+            fontSize: "1.9rem",
+            fontWeight: 800,
+            color: "#6b7280",
+            letterSpacing: "-0.02em",
+            margin: 0,
+          }}
+        >
+           Dashboard
+        </h1>
+        <p
+          style={{
+            fontSize: "0.83rem",
+            color: "rgba(168,85,247,0.6)",
+            marginTop: 4,
+            fontWeight: 500,
+          }}
+        >
+          Welcome back, Admin! Here's today's overview.
+        </p>
+      </div>
+
+      {/* Stat Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: 16,
+          marginBottom: 20,
+        }}
+      >
+        {!report
+          ? [1, 2, 3, 4].map((i) => <SkeletonStatCard key={i} />)
+          : cards.map((card) => (
+              <div
+                key={card.title}
+                className="group"
+                style={{
+                  position: "relative",
+                  background: `linear-gradient(135deg, var(--tw-gradient-from, #fdf2f8), var(--tw-gradient-to, #faf5ff))`,
+                  backdropFilter: "blur(16px)",
+                  borderRadius: 20,
+                  padding: "20px 22px",
+                  border: `1.5px solid rgba(236,72,153,0.15)`,
+                  overflow: "hidden",
+                  transition: "transform 0.35s, box-shadow 0.35s",
+                  boxShadow: `0 8px 32px ${card.glow}`,
+                  cursor: "default",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px) scale(1.02)";
+                  e.currentTarget.style.boxShadow = `0 16px 48px ${card.glow}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "";
+                  e.currentTarget.style.boxShadow = `0 8px 32px ${card.glow}`;
+                }}
+              >
+                {/* Gradient background */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: `linear-gradient(135deg, ${card.gradFrom}12, ${card.gradTo}08)`,
+                    borderRadius: 20,
+                    zIndex: 0,
+                  }}
+                />
+                {/* Blob top right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -24,
+                    right: -24,
+                    width: 80,
+                    height: 80,
+                    background: `radial-gradient(circle, ${card.gradFrom}50, transparent 70%)`,
+                    borderRadius: "50%",
+                    filter: "blur(20px)",
+                    zIndex: 0,
+                  }}
+                />
+                {/* Shine overlay */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.35) 60%, transparent 100%)",
+                    borderRadius: 20,
+                    opacity: 0,
+                    transition: "opacity 0.4s",
+                    zIndex: 1,
+                    pointerEvents: "none",
+                  }}
+                  className="shine-overlay"
+                />
+
+                {/* Content */}
+                <div style={{ position: "relative", zIndex: 2 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: 16,
+                    }}
+                  >
+                    {/* Icon box — faded bg, no solid gradient */}
+                    <div
+                      style={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: 14,
+                        background: card.iconBg,
+                        border: `1.5px solid ${card.iconBorder}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.3rem",
+                      }}
+                    >
+                      {card.icon}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "0.62rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: "rgba(168,85,247,0.5)",
+                        textAlign: "right",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {card.title}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "2.8rem",
+                      fontWeight: 800,
+                      background: `linear-gradient(135deg, ${card.gradFrom}, ${card.gradTo})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      letterSpacing: "-0.03em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {card.value}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.68rem",
+                      color: "rgba(168,85,247,0.4)",
+                      marginTop: 6,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Total count
+                  </div>
+                </div>
+                {/* Bottom glow */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: -8,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "60%",
+                    height: 16,
+                    background: `linear-gradient(90deg, ${card.gradFrom}, ${card.gradTo})`,
+                    opacity: 0,
+                    filter: "blur(12px)",
+                    borderRadius: "50%",
+                    transition: "opacity 0.4s",
+                    zIndex: 0,
+                  }}
+                />
+              </div>
+            ))}
+      </div>
+
+      {/* Bottom Row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {!report ? (
+          <>
+            <SkeletonWide />
+            <SkeletonWide />
+          </>
+        ) : (
+          <>
+            {/* Revenue Card */}
+            <div
+              style={{
+                position: "relative",
+                background: "linear-gradient(135deg, rgba(236,253,245,0.9), rgba(204,251,241,0.85))",
+                backdropFilter: "blur(20px)",
+                borderRadius: 22,
+                padding: "28px 30px",
+                border: "1.5px solid rgba(16,185,129,0.2)",
+                overflow: "hidden",
+                boxShadow: "0 8px 32px rgba(16,185,129,0.15)",
+                transition: "transform 0.35s, box-shadow 0.35s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+            >
+              <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(16,185,129,0.3), transparent 70%)", borderRadius: "50%", filter: "blur(24px)" }} />
+              <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, background: "radial-gradient(circle, rgba(52,211,153,0.2), transparent 70%)", borderRadius: "50%", filter: "blur(20px)" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.3) 60%, transparent 100%)", borderRadius: 22, pointerEvents: "none" }} />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <p style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(5,150,105,0.7)", marginBottom: 10 }}>
+                  💰 Total Revenue
+                </p>
+                <p style={{ fontSize: "2.8rem", fontWeight: 800, background: "linear-gradient(135deg, #059669, #10b981)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+                  ₹{Number(report.total_revenue).toLocaleString("en-IN")}
+                </p>
+                <p style={{ fontSize: "0.77rem", color: "rgba(5,150,105,0.5)", marginTop: 10, fontWeight: 500 }}>
+                  Across confirmed & delivered orders
+                </p>
+              </div>
+            </div>
+
+            {/* Summary Card */}
+            <div
+              style={{
+                position: "relative",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.85), rgba(253,242,248,0.8), rgba(250,245,255,0.8))",
+                backdropFilter: "blur(20px)",
+                borderRadius: 22,
+                padding: "28px 30px",
+                border: "1.5px solid rgba(236,72,153,0.12)",
+                overflow: "hidden",
+                boxShadow: "0 8px 32px rgba(236,72,153,0.1)",
+                transition: "transform 0.35s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+            >
+              <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, background: "radial-gradient(circle, rgba(236,72,153,0.2), transparent 70%)", borderRadius: "50%", filter: "blur(20px)" }} />
+              <div style={{ position: "absolute", bottom: -20, left: -20, width: 80, height: 80, background: "radial-gradient(circle, rgba(168,85,247,0.15), transparent 70%)", borderRadius: "50%", filter: "blur(18px)" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.3) 60%, transparent 100%)", borderRadius: 22, pointerEvents: "none" }} />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <p style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(168,85,247,0.5)", marginBottom: 18 }}>
+                  📊 Order Breakdown
+                </p>
+                {summaryRows.map((row) => {
+                  const pct = report.total_orders > 0 ? Math.round((row.value / report.total_orders) * 100) : 0;
+                  return (
+                    <div key={row.label} style={{ paddingBottom: 12, marginBottom: 4, borderBottom: "1px solid rgba(236,72,153,0.07)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.87rem", color: "rgba(107,33,168,0.65)", fontWeight: 500 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: row.dot, boxShadow: `0 0 8px ${row.dot}` }} />
+                          {row.label}
+                        </div>
+                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: row.dot }}>
+                          {row.value}{" "}
+                          <span style={{ color: "rgba(168,85,247,0.35)", fontWeight: 400, fontSize: "0.72rem" }}>({pct}%)</span>
+                        </span>
+                      </div>
+                      <div style={{ width: "100%", height: 5, background: "rgba(236,72,153,0.07)", borderRadius: 99, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${row.from}, ${row.to})`, borderRadius: 99, transition: "width 0.7s ease" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <style>{`
+        @media (max-width: 700px) {
+          .dash-bottom-row { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
+  );
+}

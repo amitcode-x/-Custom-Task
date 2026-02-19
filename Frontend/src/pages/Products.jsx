@@ -1,10 +1,37 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-function Products() {
+// ── Skeleton ──────────────────────────────────────────────────
+function SkeletonRow() {
+  return (
+    <tr style={{ borderBottom: "1px solid rgba(236,72,153,0.05)", animation: "pulse 1.5s ease-in-out infinite" }}>
+      <td style={{ padding: "14px 22px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, rgba(236,72,153,0.15), rgba(168,85,247,0.12))" }} />
+          <div style={{ width: 120, height: 12, borderRadius: 6, background: "rgba(236,72,153,0.12)" }} />
+        </div>
+      </td>
+      <td style={{ padding: "14px 22px" }}><div style={{ width: 70, height: 22, borderRadius: 999, background: "rgba(168,85,247,0.1)" }} /></td>
+      <td style={{ padding: "14px 22px" }}><div style={{ width: 60, height: 12, borderRadius: 6, background: "rgba(16,185,129,0.12)" }} /></td>
+      <td style={{ padding: "14px 22px" }}><div style={{ width: 80, height: 22, borderRadius: 999, background: "rgba(236,72,153,0.1)" }} /></td>
+    </tr>
+  );
+}
+
+function StatPillSkeleton() {
+  return (
+    <div style={{ flex: 1, padding: "18px 20px", textAlign: "center", animation: "pulse 1.5s ease-in-out infinite", borderRight: "1px solid rgba(236,72,153,0.06)" }}>
+      <div style={{ width: 36, height: 28, borderRadius: 8, background: "rgba(236,72,153,0.12)", margin: "0 auto 6px" }} />
+      <div style={{ width: 60, height: 8, borderRadius: 4, background: "rgba(168,85,247,0.08)", margin: "0 auto" }} />
+    </div>
+  );
+}
+
+// ── Products ──────────────────────────────────────────────────
+export default function Products() {
   const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch]     = useState("");
+  const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
     api.get("products/")
@@ -17,341 +44,138 @@ function Products() {
     p.sku.toLowerCase().includes(search.toLowerCase())
   );
 
+  const inStock  = products.filter(p => (p.inventory?.quantity ?? 0) > 10).length;
+  const lowStock = products.filter(p => { const q = p.inventory?.quantity ?? 0; return q > 0 && q <= 10; }).length;
+  const outStock = products.filter(p => (p.inventory?.quantity ?? 0) === 0).length;
+
   return (
-    <>
+    <div style={{ fontFamily: "'Poppins', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
-        .prod-wrap { font-family: 'Outfit', sans-serif; color: #e2e8f0; }
-
-        /* Header */
-        .prod-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 24px;
-          flex-wrap: wrap;
-          gap: 14px;
-        }
-        .prod-header h1 {
-          font-size: 1.8rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #e2e8f0, #a5b4fc);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          letter-spacing: -0.01em;
-        }
-        .prod-header p {
-          font-size: 0.82rem;
-          color: rgba(148,163,184,0.6);
-          margin-top: 3px;
-        }
-
-        /* Search */
-        .search-box {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 12px;
-          padding: 9px 16px;
-          backdrop-filter: blur(12px);
-          transition: border-color 0.2s;
-          min-width: 220px;
-        }
-        .search-box:focus-within {
-          border-color: rgba(99,102,241,0.5);
-          box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-        }
-        .search-box input {
-          background: transparent;
-          border: none;
-          outline: none;
-          color: #e2e8f0;
-          font-family: 'Outfit', sans-serif;
-          font-size: 0.88rem;
-          width: 100%;
-        }
-        .search-box input::placeholder { color: rgba(148,163,184,0.5); }
-
-        /* Table Card */
-        .table-card {
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 18px;
-          overflow: hidden;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.3);
-        }
-
-        /* Stats Row */
-        .stats-row {
-          display: flex;
-          gap: 0;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .stat-pill {
-          flex: 1;
-          padding: 16px 20px;
-          border-right: 1px solid rgba(255,255,255,0.06);
-          text-align: center;
-        }
-        .stat-pill:last-child { border-right: none; }
-        .stat-pill-val {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: #a5b4fc;
-        }
-        .stat-pill-label {
-          font-size: 0.7rem;
-          color: rgba(148,163,184,0.5);
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          margin-top: 2px;
-          font-weight: 600;
-        }
-
-        /* Table */
-        table { width: 100%; border-collapse: collapse; }
-
-        thead tr {
-          background: rgba(99,102,241,0.08);
-          border-bottom: 1px solid rgba(99,102,241,0.15);
-        }
-        thead th {
-          padding: 14px 20px;
-          text-align: left;
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: rgba(165,180,252,0.7);
-        }
-
-        tbody tr {
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-          transition: background 0.15s ease;
-        }
-        tbody tr:last-child { border-bottom: none; }
-        tbody tr:hover { background: rgba(99,102,241,0.07); }
-
-        tbody td {
-          padding: 14px 20px;
-          font-size: 0.88rem;
-          color: rgba(203,213,225,0.9);
-          vertical-align: middle;
-        }
-
-        /* Product Name Cell */
-        .prod-name-cell {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .prod-avatar {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3));
-          border: 1px solid rgba(99,102,241,0.25);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-          flex-shrink: 0;
-        }
-        .prod-name-text {
-          font-weight: 600;
-          color: #e2e8f0;
-        }
-
-        /* SKU Badge */
-        .sku-badge {
-          background: rgba(99,102,241,0.12);
-          border: 1px solid rgba(99,102,241,0.2);
-          color: #a5b4fc;
-          padding: 3px 10px;
-          border-radius: 999px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          font-family: 'Courier New', monospace;
-          letter-spacing: 0.04em;
-        }
-
-        /* Price */
-        .price-cell {
-          font-weight: 700;
-          color: #34d399;
-          font-size: 0.95rem;
-        }
-
-        /* Stock Badge */
-        .stock-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 4px 12px;
-          border-radius: 999px;
-          font-size: 0.78rem;
-          font-weight: 600;
-        }
-        .stock-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-        }
-        .stock-ok {
-          background: rgba(16,185,129,0.12);
-          border: 1px solid rgba(16,185,129,0.25);
-          color: #34d399;
-        }
-        .stock-low {
-          background: rgba(245,158,11,0.12);
-          border: 1px solid rgba(245,158,11,0.25);
-          color: #fbbf24;
-        }
-        .stock-out {
-          background: rgba(239,68,68,0.12);
-          border: 1px solid rgba(239,68,68,0.25);
-          color: #f87171;
-        }
-
-        /* Empty / Loading */
-        .empty-state {
-          text-align: center;
-          padding: 60px 20px;
-          color: rgba(148,163,184,0.5);
-        }
-        .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
-        .empty-text { font-size: 0.9rem; }
-
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-ring {
-          width: 40px; height: 40px;
-          border: 3px solid rgba(99,102,241,0.2);
-          border-top-color: #6366f1;
-          border-radius: 50%;
-          animation: spin 0.9s linear infinite;
-          margin: 60px auto;
-        }
-
-        @media (max-width: 640px) {
-          .prod-header { flex-direction: column; align-items: flex-start; }
-          .search-box { width: 100%; }
-          .stats-row { display: none; }
-          thead th:nth-child(2), tbody td:nth-child(2) { display: none; }
-        }
       `}</style>
 
-      <div className="prod-wrap">
-        {/* Header */}
-        <div className="prod-header">
-          <div>
-            <h1>Products</h1>
-            <p>{products.length} products in catalog</p>
-          </div>
-          <div className="search-box">
-            <span style={{ fontSize: "1rem", opacity: 0.5 }}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search by name or SKU..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
+        <div>
+  <h1
+    style={{
+      fontSize: "1.9rem",
+      fontWeight: 800,
+      color: "#6b7280",   // simple gray
+      letterSpacing: "-0.02em",
+      margin: 0,
+    }}
+  >
+    Products
+  </h1>
+
+  <p
+    style={{
+      fontSize: "0.82rem",
+      color: "#6b7280",   // simple gray
+      marginTop: 4,
+      fontWeight: 500,
+    }}
+  >
+    {products.length} products in catalog
+  </p>
+</div>
+
+        {/* Search */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.8)", border: "1.5px solid rgba(236,72,153,0.2)", borderRadius: 999, padding: "9px 18px", backdropFilter: "blur(12px)", minWidth: 220, boxShadow: "0 2px 14px rgba(236,72,153,0.08)" }}>
+          <span style={{ fontSize: "1rem", color: "#ec4899", opacity: 0.65 }}>🔍</span>
+          <input type="text" placeholder="Search by name or SKU..." value={search} onChange={e => setSearch(e.target.value)}
+            style={{ background: "transparent", border: "none", outline: "none", color: "#3b0764", fontFamily: "'Poppins', sans-serif", fontSize: "0.87rem", width: "100%", fontWeight: 500 }} />
         </div>
+      </div>
 
-        {/* Table Card */}
-        <div className="table-card">
+      {/* Table Card */}
+      <div style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.85), rgba(253,242,248,0.75), rgba(250,245,255,0.75))", backdropFilter: "blur(20px)", border: "1.5px solid rgba(236,72,153,0.12)", borderRadius: 22, overflow: "hidden", boxShadow: "0 8px 40px rgba(236,72,153,0.1)" }}>
 
-          {/* Quick Stats */}
-          <div className="stats-row">
-            <div className="stat-pill">
-              <div className="stat-pill-val">{products.length}</div>
-              <div className="stat-pill-label">Total Products</div>
-            </div>
-            <div className="stat-pill">
-              <div className="stat-pill-val" style={{ color: "#34d399" }}>
-                {products.filter(p => (p.inventory?.quantity ?? 0) > 10).length}
-              </div>
-              <div className="stat-pill-label">In Stock</div>
-            </div>
-            <div className="stat-pill">
-              <div className="stat-pill-val" style={{ color: "#fbbf24" }}>
-                {products.filter(p => (p.inventory?.quantity ?? 0) > 0 && (p.inventory?.quantity ?? 0) <= 10).length}
-              </div>
-              <div className="stat-pill-label">Low Stock</div>
-            </div>
-            <div className="stat-pill">
-              <div className="stat-pill-val" style={{ color: "#f87171" }}>
-                {products.filter(p => (p.inventory?.quantity ?? 0) === 0).length}
-              </div>
-              <div className="stat-pill-label">Out of Stock</div>
-            </div>
+        {/* Blobs inside card */}
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(236,72,153,0.15), transparent 70%)", borderRadius: "50%", filter: "blur(20px)", pointerEvents: "none", zIndex: 0 }} />
+          <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, background: "radial-gradient(circle, rgba(168,85,247,0.12), transparent 70%)", borderRadius: "50%", filter: "blur(18px)", pointerEvents: "none", zIndex: 0 }} />
+
+          {/* Stats Row */}
+          <div style={{ display: "flex", borderBottom: "1.5px solid rgba(236,72,153,0.08)", position: "relative", zIndex: 1 }}>
+            {loading
+              ? [1,2,3,4].map(i => <StatPillSkeleton key={i} />)
+              : [
+                  { val: products.length, label: "Total",       color: null },
+                  { val: inStock,         label: "In Stock",    color: "#059669" },
+                  { val: lowStock,        label: "Low Stock",   color: "#d97706" },
+                  { val: outStock,        label: "Out of Stock",color: "#ec4899" },
+                ].map((s, i) => (
+                  <div key={s.label} style={{ flex: 1, padding: "18px 20px", textAlign: "center", borderRight: i < 3 ? "1px solid rgba(236,72,153,0.07)" : "none" }}>
+                    <div style={{ fontSize: "1.7rem", fontWeight: 800, background: s.color ? "none" : "linear-gradient(135deg, #ec4899, #a855f7)", WebkitBackgroundClip: s.color ? "initial" : "text", WebkitTextFillColor: s.color ?? "transparent", color: s.color }}>
+                      {s.val}
+                    </div>
+                    <div style={{ fontSize: "0.67rem", color: "rgba(168,85,247,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 3, fontWeight: 600 }}>{s.label}</div>
+                  </div>
+                ))
+            }
           </div>
 
-          {loading ? (
-            <div className="loader-ring" />
-          ) : (
-            <table>
+          {/* Table */}
+          <div style={{ position: "relative", zIndex: 1, overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>SKU</th>
-                  <th>Price</th>
-                  <th>Stock</th>
+                <tr style={{ background: "linear-gradient(135deg, rgba(236,72,153,0.06), rgba(168,85,247,0.04))", borderBottom: "1.5px solid rgba(236,72,153,0.1)" }}>
+                  {["Product", "SKU", "Price", "Stock"].map(h => (
+                    <th key={h} style={{ padding: "14px 22px", textAlign: "left", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(168,85,247,0.6)" }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan="4">
-                      <div className="empty-state">
-                        <div className="empty-icon">📦</div>
-                        <div className="empty-text">No products found</div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map(product => {
-                    const qty = product.inventory?.quantity ?? 0;
-                    const stockClass = qty === 0 ? "stock-out" : qty <= 10 ? "stock-low" : "stock-ok";
-                    const stockDotColor = qty === 0 ? "#f87171" : qty <= 10 ? "#fbbf24" : "#34d399";
-                    const stockLabel = qty === 0 ? "Out of Stock" : qty <= 10 ? `Low (${qty})` : qty;
-
-                    return (
-                      <tr key={product.id}>
-                        <td>
-                          <div className="prod-name-cell">
-                            <div className="prod-avatar">📦</div>
-                            <span className="prod-name-text">{product.name}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="sku-badge">{product.sku}</span>
-                        </td>
-                        <td>
-                          <span className="price-cell">₹{Number(product.price).toLocaleString("en-IN")}</span>
-                        </td>
-                        <td>
-                          <span className={`stock-badge ${stockClass}`}>
-                            <span className="stock-dot" style={{ background: stockDotColor, boxShadow: `0 0 6px ${stockDotColor}` }} />
-                            {stockLabel}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                {loading
+                  ? [1,2,3,4,5].map(i => <SkeletonRow key={i} />)
+                  : filtered.length === 0
+                    ? (
+                        <tr><td colSpan={4} style={{ padding: "60px 20px", textAlign: "center", color: "rgba(168,85,247,0.4)" }}>
+                          <div style={{ fontSize: "2.8rem", marginBottom: 10 }}>🎁</div>
+                          <div style={{ fontSize: "0.9rem", fontWeight: 500 }}>No products found</div>
+                        </td></tr>
+                      )
+                    : filtered.map(product => {
+                        const qty = product.inventory?.quantity ?? 0;
+                        const stockColor = qty === 0 ? "#ec4899" : qty <= 10 ? "#d97706" : "#059669";
+                        const stockLabel = qty === 0 ? "Out of Stock" : qty <= 10 ? `Low (${qty})` : qty;
+                        return (
+                          <tr key={product.id}
+                            style={{ borderBottom: "1px solid rgba(236,72,153,0.05)", transition: "background 0.15s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "rgba(236,72,153,0.03)"}
+                            onMouseLeave={e => e.currentTarget.style.background = ""}
+                          >
+                            <td style={{ padding: "14px 22px", verticalAlign: "middle" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.12))", border: "1.5px solid rgba(236,72,153,0.18)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", flexShrink: 0 }}>🎁</div>
+                                <span style={{ fontWeight: 600, color: "#4c0280", fontSize: "0.9rem" }}>{product.name}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: "14px 22px", verticalAlign: "middle" }}>
+                              <span style={{ background: "linear-gradient(135deg, rgba(168,85,247,0.08), rgba(236,72,153,0.06))", border: "1.5px solid rgba(168,85,247,0.18)", color: "#a855f7", padding: "3px 12px", borderRadius: 999, fontSize: "0.74rem", fontWeight: 600, fontFamily: "monospace", letterSpacing: "0.04em" }}>{product.sku}</span>
+                            </td>
+                            <td style={{ padding: "14px 22px", verticalAlign: "middle", fontWeight: 700, color: "#059669", fontSize: "0.95rem" }}>
+                              ₹{Number(product.price).toLocaleString("en-IN")}
+                            </td>
+                            <td style={{ padding: "14px 22px", verticalAlign: "middle" }}>
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 14px", borderRadius: 999, fontSize: "0.76rem", fontWeight: 600, background: `${stockColor}15`, border: `1.5px solid ${stockColor}40`, color: stockColor }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: stockColor, boxShadow: `0 0 5px ${stockColor}` }} />
+                                {stockLabel}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                }
               </tbody>
             </table>
-          )}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
-
-export default Products;

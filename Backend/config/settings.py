@@ -28,7 +28,12 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 
-ALLOWED_HOSTS = ["custom-task.onrender.com"]
+ALLOWED_HOSTS = [
+    "custom-task.onrender.com",
+    "127.0.0.1",
+    "localhost",
+]
+
 
 
 
@@ -82,6 +87,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -90,11 +97,15 @@ DATABASES = {
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config("DB_HOST"),
         'PORT': config("DB_PORT"),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
     }
 }
+
+# ✅ Only require SSL in production
+if not DEBUG:
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+    }
+
 
 
 
@@ -152,5 +163,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CORS_ALLOWED_ORIGINS = [
     "https://custom-task.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+
 
