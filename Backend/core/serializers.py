@@ -101,7 +101,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return order
 
 
-    # YAHI DALNA HAI (create ke niche)
+    # This method allows updating the order items and recalculating the total amount, but only if the order is still in "Draft" status.
     def update(self, instance, validated_data):
         if instance.status != "Draft":
             raise serializers.ValidationError(

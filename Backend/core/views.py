@@ -95,7 +95,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         order = self.get_object()
 
-    # Delivered order delete allowed nahi
+    # Delivered order delete not allowed -> error response
         if order.status == "Delivered":
             return Response(
                 {"error": "Delivered orders cannot be deleted."},
@@ -114,7 +114,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
             return Response({"message": "Order deleted and stock restored."})
 
-    # Draft order delete normal
+    # Draft order delete → simple delete
         order.delete()
         return Response({"message": "Draft order deleted."})
     @action(detail=False, methods=["get"])
